@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("POSTGRES_URL")
+}
+
+enum Status {
+    ACTIVE
+    INACTIVE
+    DELETED
+}
+
+enum PermissionType {
+    ALL_DATA
+    CREATE
+    READ
+    UPDATE
+    DELETE
+}
+
+model UserModel {
+    id                           Int    @id @default(autoincrement())
+    name                         String    @db.VarChar(50)
+    lastName                     String    @db.VarChar(50)
+    email                        String    @unique @db.VarChar(100)
+    password                     String
+    status                       Status    @default(ACTIVE)
+    avatar                       String?
+    tokenSession                 String?
+    emailVerified                Boolean   @default(false)
+    emailVerificationToken       String?
+    emailVerificationTokenExpiry DateTime?
+    passwordResetToken           String?
+    passwordResetTokenExpiry     DateTime?
+    passwordChangedAt            DateTime?
+    failedLoginAttempts          Int       @default(0)
+    accountLocked                Boolean   @default(false)
+    lockoutExpiry                DateTime?
+    lastLoginAt                  DateTime?
+    lastLoginIp                  String?   @db.VarChar(50)
+    createdAt                    DateTime  @default(now())
+    updatedAt                    DateTime  @updatedAt
+
+    roles UserRoleModel[]
+
+    @@map("users")
+}
+
+model RoleModel {
+    id          Int   @id @default(autoincrement())
+    name        String   @unique @db.VarChar(50)
+    description String?
+    status      Status   @default(ACTIVE)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    users           UserRoleModel[]
+    rolePermissions RolePermissionModel[]
+
+    @@map("roles")
+}
+
+model UserRoleModel {
+    id        Int   @id @default(autoincrement())
+    userId    Int
+    roleId    Int
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user UserModel @relation(fields: [userId], references: [id])
+    role RoleModel @relation(fields: [roleId], references: [id])
+
+    @@unique([userId, roleId])
+    @@map("user_roles")
+}
+
+model ModuleModel {
+    id          Int   @id @default(autoincrement())
+    name        String   @db.VarChar(50)
+    description String?
+    status      Status   @default(ACTIVE)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    rolePermissions RolePermissionModel[]
+
+    @@map("modules")
+}
+
+model PermissionModel {
+    id          Int         @id @default(autoincrement())
+    name        PermissionType // Tipo de permiso (CREATE, READ, UPDATE, DELETE)
+    description String?
+    status      Status         @default(ACTIVE)
+    createdAt   DateTime       @default(now())
+    updatedAt   DateTime       @updatedAt
+
+    rolePermissions RolePermissionModel[]
+
+    @@map("permissions")
+}
+
+model RolePermissionModel {
+    id           Int   @id @default(autoincrement())
+    roleId       Int
+    moduleId     Int
+    permissionId Int
+    status       Status   @default(ACTIVE)
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    role       RoleModel       @relation(fields: [roleId], references: [id])
+    module     ModuleModel     @relation(fields: [moduleId], references: [id])
+    permission PermissionModel @relation(fields: [permissionId], references: [id])
+
+    @@unique([roleId, moduleId, permissionId])
+    @@map("role_permissions")
+}
