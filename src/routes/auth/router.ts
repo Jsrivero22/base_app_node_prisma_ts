@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { EmailAdapterGoogle, envs } from 'src/config/adapters';
 import { AuthController } from 'src/controllers/auth/controller';
 import {
     AuthService,
@@ -8,25 +7,27 @@ import {
     UsersService,
 } from 'src/services';
 import { AuthValidators } from './validators';
+import { EmailAdapterSMTP } from 'src/config/adapters/emails.adapter';
+import { envs } from 'src/config/adapters/envs.adapter';
 
 export class AuthRoutes {
     static get routes(): Router {
         const router = Router();
 
-        // const emailAdapter = new EmailAdapterSMTP({
-        //     host: envs.SMTP_HOST,
-        //     port: envs.SMTP_PORT,
-        //     secure: envs.SMTP_SECURE,
-        //     user: envs.SMTP_USER,
-        //     password: envs.SMTP_PASS,
-        //     from: envs.SENDER_EMAIL,
-        // });
-
-        const emailAdapter = new EmailAdapterGoogle({
-            service: envs.MAIL_SERVICE,
-            user: envs.SENDER_EMAIL,
-            password: envs.MAILER_SECRET_KEY,
+        const emailAdapter = new EmailAdapterSMTP({
+            host: envs.SMTP_HOST,
+            port: envs.SMTP_PORT,
+            secure: envs.SMTP_SECURE,
+            user: envs.SMTP_USER,
+            password: envs.SMTP_PASS,
+            from: envs.SENDER_EMAIL,
         });
+
+        // const emailAdapter = new EmailAdapterGoogle({
+        //     service: envs.MAIL_SERVICE,
+        //     user: envs.SENDER_EMAIL,
+        //     password: envs.MAILER_SECRET_KEY,
+        // });
 
         const emailService = new EmailService(emailAdapter);
 

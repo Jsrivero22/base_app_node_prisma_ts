@@ -1,6 +1,6 @@
 import { ModuleModel } from '@prisma/client';
-import { Uuid } from '../../src/config/adapters';
 import { prisma } from '../../src/data/postgres';
+import { Uuid } from '../../src/config/adapters/uuid.adapter';
 
 type PermissionsMap = Record<string, string>; // Mapa de permisos
 type Modules = {
@@ -47,10 +47,12 @@ export async function createRoles(
     // Define todos los permisos que se asignarán a los roles
     const allPermissionsInRoles = [
         'ALL_DATA',
-        'CREATE',
         'READ',
+        'CREATE',
         'UPDATE',
         'DELETE',
+        'SHOW_ALL',
+        'SHOW',
     ];
 
     // Crea el rol de administrador

@@ -1,5 +1,5 @@
 import { UserModel } from '@prisma/client';
-import { EncryptedAdapter } from 'src/config/adapters';
+import { EncryptedAdapter } from 'src/config/adapters/bcrypt.adapter';
 import { CustomError } from 'src/errors/custom.error';
 import { UsersService } from 'src/services/users/users.service';
 

@@ -18,8 +18,8 @@ export type EmailConfigSMTP = {
     host: string;
     port: number;
     secure: boolean;
-    user: string;
-    password: string;
+    user?: string;
+    password?: string;
     from: string;
 };
 

@@ -1,5 +1,5 @@
 import { body, query, ValidationChain } from 'express-validator';
-import { JWT } from 'src/config/adapters';
+import { JWT } from 'src/config/adapters/jwt.adapter';
 import {
     validateAuthHeader,
     validateEmail,

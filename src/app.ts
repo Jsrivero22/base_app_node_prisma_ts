@@ -1,6 +1,6 @@
 import { ServerApp } from './server';
 import { AppRoutes } from './routes/index.routes';
-import { envs } from './config/adapters';
+import { envs } from './config/adapters/envs.adapter';
 
 (async () => {
     await main();

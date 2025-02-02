@@ -2,6 +2,8 @@
 ├── src
 │   ├── config
 |   |   ├── adapters
+|   |   |  ├── index.ts
+|   |   |  ├── jwt.adapter.ts
 │   │   ├── index.ts
 │   ├── controllers
 │   │   ├── auth

@@ -8,6 +8,7 @@ import {
 import { UsersService } from 'src/services/users/users.service';
 import { CustomError } from 'src/errors/custom.error';
 import { Status } from '@prisma/client';
+import { RolesService } from 'src/services/roles/roles.service';
 
 export interface LoginUser {
     execute(dto: LoginUserDto): Promise<unknown>;
@@ -19,10 +20,12 @@ export class LoginUserUseCase implements LoginUser {
     constructor(
         private readonly authService: AuthService,
         private readonly userService: UsersService,
+        private readonly rolesService: RolesService,
     ) {}
 
     async execute(dto: LoginUserDto): Promise<UserEntity> {
         const user = await this.userService.findByEmail(dto.email);
+        const roles = await this.rolesService.findByUserId(user.id);
 
         if (!user.emailVerified) {
             throw CustomError.forbidden(
@@ -53,6 +56,6 @@ export class LoginUserUseCase implements LoginUser {
             );
         }
 
-        return this.authService.login(dto, user);
+        return this.authService.login(dto, user, roles);
     }
 }

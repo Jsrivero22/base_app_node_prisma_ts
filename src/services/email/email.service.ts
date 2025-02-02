@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { Email, envs, MailOptions } from 'src/config/adapters';
+import { Email, MailOptions } from 'src/config/adapters/emails.adapter';
+import { envs } from 'src/config/adapters/envs.adapter';
 import { CustomError } from 'src/errors/custom.error';
 
 export class EmailService {

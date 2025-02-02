@@ -2,15 +2,9 @@ import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
 import { envs } from './envs.adapter';
 import { Request } from 'express';
 import { CustomError } from 'src/errors/custom.error';
+import { DraftTokenType, TokenType } from 'src/types/jwt';
 
 const expire: string = '12h';
-
-export type DraftTokenType = { id: string; status: string; userType?: string };
-export type TokenType = {
-    id: string;
-    status: string;
-    userType?: string;
-};
 
 export class JWT {
     constructor() {}

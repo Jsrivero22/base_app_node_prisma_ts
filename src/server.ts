@@ -4,6 +4,7 @@ import compression from 'compression';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { errorHandler } from '@middlewares/errorHandler.middleware';
 
 interface Options {
     port: number;
@@ -58,6 +59,9 @@ export class ServerApp {
 
         // * Routes
         this.app.use(this.pathRoutes, this.routes);
+
+        // * Global error handler
+        this.app.use(errorHandler);
 
         // * Run Server
         this.serverListener = this.app.listen(this.port, () => {

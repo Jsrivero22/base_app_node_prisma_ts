@@ -3,7 +3,8 @@
   "ext": ".ts,.js",
   "ignore": [
     "node_modules",
-    "dist"
+    "dist",
+    "public/*"
   ],
   "exec": "npx ts-node ./src/app.ts",
   "events": {

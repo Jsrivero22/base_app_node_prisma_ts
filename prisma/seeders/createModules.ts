@@ -1,5 +1,5 @@
-import { Uuid } from '../../src/config/adapters';
 import { prisma } from '../../src/data/postgres';
+import { Uuid } from '../../src/config/adapters/uuid.adapter';
 
 export async function createModules() {
     // Define the modules data

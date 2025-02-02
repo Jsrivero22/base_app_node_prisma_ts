@@ -2,9 +2,13 @@ import { prisma } from '@postgres';
 import { CreateUserDto } from 'src/controllers/users/dtos';
 import { CustomError } from 'src/errors/custom.error';
 import { UserEntity } from './entity';
-import { EncryptedAdapter, JWT, Uuid } from 'src/config/adapters';
-import { Status, UserModel, UserType } from '@prisma/client';
+import { Prisma, Status, UserModel } from '@prisma/client';
 import { ExpiryDateGenerator } from 'src/utils/expiryDateGenerator';
+import { handleServiceError } from 'src/errors';
+import { Uuid } from 'src/config/adapters/uuid.adapter';
+import { EncryptedAdapter } from 'src/config/adapters/bcrypt.adapter';
+import { JWT } from 'src/config/adapters/jwt.adapter';
+import { UserWithRoles } from 'src/types/users';
 
 export class UsersService {
     private readonly module = 'UsersService';
@@ -15,9 +19,8 @@ export class UsersService {
     async createUser(createUserDto: CreateUserDto): Promise<UserModel> {
         const { roles, password, ...userData } = createUserDto;
         const id: string = Uuid.generate();
-        const userType = userData.userType ?? UserType.USER;
         const emailVerificationToken: string = JWT.tokenSign(
-            { id, status: Status.ACTIVE, userType },
+            { id, status: Status.ACTIVE, roles: roles.map(roleId => roleId) },
             '30m',
         );
         const tokenExpiry = ExpiryDateGenerator.fromMinutes(30);
@@ -35,42 +38,42 @@ export class UsersService {
                             connect: roles.map(roleId => ({ id: roleId })),
                         },
                     },
-                    include: { roles: true },
+                    include: { roles: { select: { id: true, name: true } } },
                 });
             });
 
             return user;
         } catch (error) {
-            throw CustomError.internal(
-                `Error creating user: ${error}`,
-                this.module,
-                'createUser',
-            );
+            handleServiceError('createUser', this.module, error);
         }
     }
 
-    async updateUserById(id: UserModel['id'], userData: Partial<UserModel>) {
+    async updateUserById(
+        id: UserModel['id'],
+        userData: Partial<UserModel>,
+        includeOptions?: Prisma.UserModelInclude,
+    ): Promise<UserEntity> {
         try {
             const user = await this.prismaService.userModel.update({
                 where: { id },
                 data: userData,
+                include: includeOptions,
             });
 
             return UserEntity.fromObject(user);
         } catch (error) {
-            throw CustomError.internal(
-                `Error updating user: ${error}`,
-                this.module,
-                'updateUserById',
-            );
+            handleServiceError('updateUserById', this.module, error);
         }
     }
 
-    async findById(id: UserModel['id']): Promise<UserModel> {
+    async findById(
+        id: UserModel['id'],
+        includeOptions?: Prisma.UserModelInclude,
+    ): Promise<UserModel> {
         try {
             const user = await this.prismaService.userModel.findUnique({
                 where: { id },
-                include: { roles: true },
+                include: includeOptions,
             });
 
             if (!user) {
@@ -83,11 +86,7 @@ export class UsersService {
 
             return user;
         } catch (error) {
-            throw CustomError.internal(
-                `Error finding user: ${error}`,
-                this.module,
-                'findById',
-            );
+            handleServiceError('findById', this.module, error);
         }
     }
 
@@ -107,11 +106,7 @@ export class UsersService {
 
             return user;
         } catch (error) {
-            throw CustomError.internal(
-                `Error finding user: ${error}`,
-                this.module,
-                'findByEmail',
-            );
+            handleServiceError('findByEmail', this.module, error);
         }
     }
 
@@ -129,10 +124,51 @@ export class UsersService {
                 );
             }
         } catch (error) {
-            throw CustomError.internal(
-                `Error validating email: ${error}`,
+            handleServiceError('validateExistingEmail', this.module, error);
+        }
+    }
+
+    async findUserWithRolesAndPermissions(
+        id: UserModel['id'],
+    ): Promise<UserWithRoles> {
+        try {
+            const user = await this.prismaService.userModel.findUnique({
+                where: { id },
+                include: {
+                    roles: {
+                        select: {
+                            name: true,
+                            roleModulePermissions: {
+                                select: {
+                                    permission: {
+                                        select: {
+                                            permissionType: {
+                                                select: { name: true },
+                                            },
+                                            module: { select: { name: true } },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            if (!user) {
+                throw CustomError.notFound(
+                    `User with id ${id} not found`,
+                    this.module,
+                    'findUserWithRolesAndPermissions',
+                );
+            }
+
+            return user as UserWithRoles;
+        } catch (error) {
+            handleServiceError(
+                'findUserWithRolesAndPermissions',
                 this.module,
-                'validateExistingEmail',
+                error,
             );
         }
     }

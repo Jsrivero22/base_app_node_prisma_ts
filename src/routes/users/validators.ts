@@ -1,6 +1,6 @@
 import { UserType } from '@prisma/client';
 import { body, ValidationChain } from 'express-validator';
-import { Uuid } from 'src/config/adapters';
+import { Uuid } from 'src/config/adapters/uuid.adapter';
 import {
     validateEmail,
     validateResult,

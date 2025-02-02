@@ -1,7 +1,8 @@
 import { Status } from '@prisma/client';
-import { JWT, TokenType } from 'src/config/adapters';
+import { JWT } from 'src/config/adapters/jwt.adapter';
 import { CustomError } from 'src/errors/custom.error';
 import { UsersService } from 'src/services/users/users.service';
+import { TokenType } from 'src/types/jwt';
 
 interface ValidateEmailUser {
     execute(token: string): Promise<boolean>;
@@ -15,7 +16,7 @@ export class ValidateEmailUserUseCase implements ValidateEmailUser {
     async execute(token: string): Promise<boolean> {
         const tokenVerified = JWT.tokenVerify<TokenType>(token);
 
-        const { id, userType, status } = tokenVerified;
+        const { id, status } = tokenVerified;
 
         const user = await this.userService.findById(id);
         if (user.emailVerificationToken !== token) {
@@ -40,14 +41,6 @@ export class ValidateEmailUserUseCase implements ValidateEmailUser {
         if (user.emailVerified) {
             throw CustomError.badRequest(
                 'Email already verified',
-                this.module,
-                'execute',
-            );
-        }
-
-        if (userType !== user.userType) {
-            throw CustomError.badRequest(
-                'Invalid token',
                 this.module,
                 'execute',
             );

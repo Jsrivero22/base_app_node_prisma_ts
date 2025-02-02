@@ -1,5 +1,5 @@
 import { prisma } from '../../src/data/postgres';
-import { Uuid } from '../../src/config/adapters';
+import { Uuid } from '../../src/config/adapters/uuid.adapter';
 
 // Definición de los tipos de permisos
 const allPermissionTypes = [
@@ -23,6 +23,16 @@ const allPermissionTypes = [
         id: Uuid.generate(),
         name: 'DELETE',
         description: 'Allows deleting data',
+    },
+    {
+        id: Uuid.generate(),
+        name: 'SHOW_ALL',
+        description: 'Allows showing all data',
+    },
+    {
+        id: Uuid.generate(),
+        name: 'SHOW',
+        description: 'Allows showing data',
     },
 ];
 

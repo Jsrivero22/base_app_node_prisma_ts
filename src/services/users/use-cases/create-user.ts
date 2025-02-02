@@ -32,7 +32,14 @@ export class CreateUserUseCase implements CreateUser {
         if (user.emailVerificationToken) {
             await this.emailService
                 .validationToken(user.emailVerificationToken, user.email)
-                .catch(() => {});
+                .catch(error => {
+                    console.log(error);
+                    throw CustomError.internal(
+                        'Error sending email validation token',
+                        'CreateUserUseCase',
+                        'execute',
+                    );
+                });
         }
 
         return UserEntity.fromObject(user);

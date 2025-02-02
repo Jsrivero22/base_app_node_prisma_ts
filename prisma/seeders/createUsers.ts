@@ -1,6 +1,7 @@
+import { Uuid } from '../../src/config/adapters/uuid.adapter';
 import { prisma } from '../../src/data/postgres';
-import { EncryptedAdapter, Uuid } from '../../src/config/adapters';
 import { UserType } from '@prisma/client';
+import { EncryptedAdapter } from '../../src/config/adapters/bcrypt.adapter';
 
 export async function createUsers(id: string) {
     await prisma.userModel.create({

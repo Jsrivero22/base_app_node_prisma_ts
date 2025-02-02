@@ -1,7 +1,8 @@
 import { Router } from 'express';
+import { RolesController } from '@controllers/index';
+import { RolesService } from '@services/index';
 import { RolesValidators } from './validators';
-import { RolesController } from 'src/controllers';
-import { RolesService } from 'src/services';
+import { authenticate, authorize } from '@middlewares/authUser.middleware';
 
 export class RolesRoutes {
     static get routes(): Router {
@@ -10,11 +11,37 @@ export class RolesRoutes {
         const rolesServices = new RolesService();
         const controller = new RolesController(rolesServices);
 
-        router.get('/', controller.getRoles);
-        router.get('/:id', RolesValidators.getID, controller.getRole);
-        router.post('/', RolesValidators.create, controller.createRole);
-        router.put('/:id', RolesValidators.update, controller.updateRole);
-        router.delete('/:id', RolesValidators.delete, controller.deleteRole);
+        router.use(authenticate);
+
+        router.get('/', authorize('SHOW_ALL', 'roles'), controller.getRoles);
+
+        router.get(
+            '/:id',
+            RolesValidators.getID,
+            authorize('SHOW', 'roles'),
+            controller.getRole,
+        );
+
+        router.post(
+            '/',
+            RolesValidators.create,
+            authorize('create', 'roles'),
+            controller.createRole,
+        );
+
+        router.put(
+            '/:id',
+            RolesValidators.update,
+            authorize('update', 'roles'),
+            controller.updateRole,
+        );
+
+        router.delete(
+            '/:id',
+            RolesValidators.delete,
+            authorize('delete', 'roles'),
+            controller.deleteRole,
+        );
 
         return router;
     }

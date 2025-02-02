@@ -8,7 +8,8 @@ import {
     ValidationChain,
     validationResult,
 } from 'express-validator';
-import { JWT, Uuid } from 'src/config/adapters';
+import { JWT } from 'src/config/adapters/jwt.adapter';
+import { Uuid } from 'src/config/adapters/uuid.adapter';
 import { CustomError } from 'src/errors/custom.error';
 
 export const validateUUID = (

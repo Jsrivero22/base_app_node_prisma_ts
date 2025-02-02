@@ -1,4 +1,4 @@
-import { JWT } from 'src/config/adapters';
+import { JWT } from 'src/config/adapters/jwt.adapter';
 import { CustomError } from 'src/errors/custom.error';
 import { UsersService } from 'src/services/users/users.service';
 import { ExpiryDateGenerator } from 'src/utils/expiryDateGenerator';

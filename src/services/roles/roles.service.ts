@@ -3,7 +3,9 @@ import { RoleEntity } from './entity';
 import { CustomError } from 'src/errors/custom.error';
 import { CreateRoleDto } from 'src/controllers/roles/dtos/create-role.dto';
 import { UpdateRoleDto } from 'src/controllers/roles/dtos';
-import { Uuid } from 'src/config/adapters';
+import { handleServiceError } from 'src/errors';
+import { Uuid } from 'src/config/adapters/uuid.adapter';
+import { RoleModel } from '@prisma/client';
 
 export class RolesService {
     private readonly module = 'RolesService';
@@ -17,11 +19,7 @@ export class RolesService {
 
             return RoleEntity.fromArray(roles);
         } catch (error) {
-            throw CustomError.internal(
-                `Error getting roles: ${error}`,
-                this.module,
-                'getRoles',
-            );
+            handleServiceError('getRoles', this.module, error);
         }
     }
 
@@ -38,15 +36,11 @@ export class RolesService {
 
             return RoleEntity.fromObject(role);
         } catch (error) {
-            throw CustomError.internal(
-                `Error creating role: ${error}`,
-                this.module,
-                'createRole',
-            );
+            handleServiceError('createRole', this.module, error);
         }
     }
 
-    async findById(id: string): Promise<RoleEntity> {
+    async findById(id: RoleModel['id']): Promise<RoleEntity> {
         const role = await this.prismaService.roleModel.findUnique({
             where: { id },
         });
@@ -62,7 +56,7 @@ export class RolesService {
         return RoleEntity.fromObject(role);
     }
 
-    async deleteById(id: string): Promise<void> {
+    async deleteById(id: RoleModel['id']): Promise<void> {
         await this.findById(id);
 
         try {
@@ -70,11 +64,7 @@ export class RolesService {
                 where: { id },
             });
         } catch (error) {
-            throw CustomError.internal(
-                `Error deleting role: ${error}`,
-                this.module,
-                'deleteById',
-            );
+            handleServiceError('deleteById', this.module, error);
         }
     }
 
@@ -92,15 +82,13 @@ export class RolesService {
             console.log(role);
             return RoleEntity.fromObject(role);
         } catch (error) {
-            throw CustomError.internal(
-                `Error updating role: ${error}`,
-                this.module,
-                'updateById',
-            );
+            handleServiceError('updateById', this.module, error);
         }
     }
 
-    private async findRoleByName(name: string): Promise<RoleEntity | null> {
+    private async findRoleByName(
+        name: RoleModel['name'],
+    ): Promise<RoleEntity | null> {
         const role = await this.prismaService.roleModel.findUnique({
             where: { name },
         });
@@ -108,7 +96,7 @@ export class RolesService {
         return role ? RoleEntity.fromObject(role) : null;
     }
 
-    async validateRoleExistence(name: string): Promise<void> {
+    async validateRoleExistence(name: RoleModel['name']): Promise<void> {
         const role = await this.findRoleByName(name);
 
         if (role) {
@@ -120,7 +108,7 @@ export class RolesService {
         }
     }
 
-    async findByName(name: string): Promise<RoleEntity> {
+    async findByName(name: RoleModel['name']): Promise<RoleEntity> {
         const role = await this.findRoleByName(name);
 
         if (!role) {
@@ -133,7 +121,7 @@ export class RolesService {
         return role;
     }
 
-    async findByIds(ids: string[]): Promise<RoleEntity[]> {
+    async findByIds(ids: RoleModel['id'][]): Promise<RoleEntity[]> {
         const roles = await this.prismaService.roleModel.findMany({
             where: { id: { in: ids } },
         });
@@ -156,4 +144,12 @@ export class RolesService {
 
     //     return userRoles.length > 0;
     // }
+
+    async findByUserId(userId: string): Promise<RoleEntity[]> {
+        const userRoles = await this.prismaService.roleModel.findMany({
+            where: { users: { some: { id: userId } } },
+        });
+
+        return RoleEntity.fromArray(userRoles);
+    }
 }

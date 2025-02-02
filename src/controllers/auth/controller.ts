@@ -16,7 +16,7 @@ import { GenerateTokenEmailVerificationUserUseCase } from 'src/services/auth/use
 import { GenerateTokenForgetPasswordUseCase } from 'src/services/auth/use-cases/generateTokenForgetPassword-user';
 import { ChangePasswordUserUseCase } from 'src/services/auth/use-cases/changePassword-user';
 import { LogoutUserUseCase } from 'src/services/auth/use-cases/logout-user';
-import { JWT } from 'src/config/adapters';
+import { JWT } from 'src/config/adapters/jwt.adapter';
 
 export class AuthController {
     constructor(
@@ -42,7 +42,11 @@ export class AuthController {
     login = (req: Request, res: Response) => {
         const loginUserDto = LoginUserDto.create(req.body);
 
-        new LoginUserUseCase(this.authService, this.userService)
+        new LoginUserUseCase(
+            this.authService,
+            this.userService,
+            this.rolesService,
+        )
             .execute(loginUserDto)
             .then(user => {
                 return Success.ok('User logged in', user).send(res);
@@ -65,6 +69,7 @@ export class AuthController {
         new GenerateTokenEmailVerificationUserUseCase(
             this.userService,
             this.emailService,
+            this.rolesService,
         )
             .execute(email)
             .then(() => Success.ok('Email verification sent').send(res))
@@ -77,6 +82,7 @@ export class AuthController {
         new GenerateTokenForgetPasswordUseCase(
             this.userService,
             this.emailService,
+            this.rolesService,
         )
             .execute(email)
             .then(() => Success.ok('Password reset email sent').send(res))

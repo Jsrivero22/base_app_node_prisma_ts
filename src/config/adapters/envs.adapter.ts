@@ -21,8 +21,8 @@ export const envs = {
     MAIL_SERVICE: env.get('MAIL_SERVICE').required().asString(),
     MAILER_SECRET_KEY: env.get('MAILER_SECRET_KEY').required().asString(),
 
-    SMTP_USER: env.get('SMTP_USER').required().asString(),
-    SMTP_PASS: env.get('SMTP_PASS').required().asString(),
+    SMTP_USER: env.get('SMTP_USER').asString(),
+    SMTP_PASS: env.get('SMTP_PASS').asString(),
     SMTP_HOST: env.get('SMTP_HOST').required().asString(),
     SMTP_PORT: env.get('SMTP_PORT').required().asPortNumber(),
     SMTP_SECURE: env.get('SMTP_SECURE').required().asBool(),
